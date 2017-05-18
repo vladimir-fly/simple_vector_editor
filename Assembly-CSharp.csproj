@@ -4,7 +4,7 @@
     <unityVersion>5.6.0xb1Linux</unityVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <unityProcessId>11722</unityProcessId>
+    <unityProcessId>1929</unityProcessId>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>4</LangVersion>
@@ -70,17 +70,12 @@
     <Compile Include="Assets\Scripts\Models\Headers\IProject.cs" />
     <Compile Include="Assets\Scripts\Models\Headers\IProjectFormat.cs" />
     <Compile Include="Assets\Scripts\Models\Headers\IShape.cs" />
-    <Compile Include="Assets\Scripts\Models\Primitives\BaseLayout.cs" />
-    <Compile Include="Assets\Scripts\Models\Primitives\Curve.cs" />
-    <Compile Include="Assets\Scripts\Models\Primitives\Dot.cs" />
-    <Compile Include="Assets\Scripts\Models\Primitives\Straight.cs" />
     <Compile Include="Assets\Scripts\Models\Projects\SimpleProject.cs" />
+    <Compile Include="Assets\Scripts\Models\Shapes\BaseLayout.cs" />
     <Compile Include="Assets\Scripts\Models\Shapes\BaseShape.cs" />
-    <Compile Include="Assets\Scripts\Models\Shapes\Cirle.cs" />
-    <Compile Include="Assets\Scripts\Models\Shapes\Rectangle.cs" />
     <Compile Include="Assets\Scripts\Models\Shapes\Shape.cs" />
     <Compile Include="Assets\Scripts\Models\Structs\Color.cs" />
-    <Compile Include="Assets\Scripts\Models\Structs\ETool.cs" />
+    <Compile Include="Assets\Scripts\Models\Structs\EShapeType.cs" />
     <Compile Include="Assets\Scripts\Models\Structs\Point.cs" />
     <Compile Include="Assets\Scripts\Views\CanvasView.Helpers.cs" />
     <Compile Include="Assets\Scripts\Views\CanvasView.cs" />

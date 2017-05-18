@@ -1,15 +1,16 @@
 ﻿using System;
 using SVE.Models;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Color = UnityEngine.Color;
 
 namespace SVE.Views
 {
-    public partial class CanvasView : MonoBehaviour
+    public partial class CanvasView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        private Action<ILayout> DrawCallback;
+        private Action<IShape> DrawCallback;
 
-        private Func<ETool> GetCurrentTool;
+        private Func<EShapeType> GetCurrentTool;
         private Func<Color> GetBorderColor;
         private Func<Color> GetFillColor;
 
@@ -20,9 +21,11 @@ namespace SVE.Views
         private Vector3 _endPoint;
 
         private bool _isDrawing;
+        private bool _isPointerOnCanvas;
+
         private Texture2D _texture;
 
-        public void Init(Action<ILayout> drawCallback, Func<ETool> getCurrentTool,
+        public void Init(Action<IShape> drawCallback, Func<EShapeType> getCurrentTool,
             Func<Color> getFillColor, Func<Color> getBorderColor)
         {
             _canvasWidth = (int) GetComponent<RectTransform>().rect.width;
@@ -39,35 +42,42 @@ namespace SVE.Views
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && _isPointerOnCanvas)
             {
                 _startPoint = Input.mousePosition;
                 _isDrawing = true;
             }
-
-            if (Input.GetMouseButtonUp(0)) _isDrawing = false;
             if (!_isDrawing) return;
 
             _endPoint = Input.mousePosition;
 
             var layout = new BaseLayout(
-                    new Point(_startPoint.x, _startPoint.y),
-                    new Point(_endPoint.x, _endPoint.y));
+                new Point(_startPoint.x, _startPoint.y),
+                new Point(_endPoint.x, _endPoint.y));
 
-            var shape =
-                new BaseShape(layout, WrapColor(GetBorderColor()), WrapColor(GetFillColor()));
+            var shape = new BaseShape(
+                layout,
+                GetCurrentTool(),
+                WrapColor(GetFillColor()),
+                WrapColor(GetBorderColor()));
 
             Draw(shape);
+
+            if (Input.GetMouseButtonUp(0) && _isPointerOnCanvas)
+            {
+                Debug.Log("draw and send shae");
+                _isDrawing = false;
+                Draw(shape, true, false);
+            }
         }
 
-        public void Draw(BaseShape shape)
+        public void Draw(IShape shape, bool sendShape = false, bool clear = true)
         {
-            ClearCanvas();
+            if (clear)
+                ClearCanvas();
 
-            var p1 = shape.Point1;
-            var p2 = shape.Point2;
-
-            var tool = GetCurrentTool();
+            var p1 = ((BaseShape) shape).Point1;
+            var p2 = ((BaseShape) shape).Point2;
 
             var maxX = Math.Max(p1.x, p2.x);
             var minX = Math.Min(p1.x, p2.x);
@@ -80,20 +90,31 @@ namespace SVE.Views
             var minDelta = Math.Min(deltaX, deltaY);
             var coff = maxDelta / minDelta;
 
-            switch (tool)
+            switch (shape.ShapeType)
             {
-                case ETool.Line:
+                case EShapeType.Line:
                     for (var i = minX; i < maxX; i++)
-                            _texture.SetPixel((int) i,  (int) (i / coff), WrapColor(shape.Color));
+                        _texture.SetPixel((int) i,  (int) (i / coff), WrapColor(shape.Color));
                     break;
-                case ETool.Rectangle:
+                case EShapeType.Rectangle:
                     for (var i = minX; i < maxX; i++)
                         for (var j = minY; j < maxY; j++)
                             _texture.SetPixel((int) i, (int) j, WrapColor(shape.Color));
                     break;
-                case ETool.Circle:
+                case EShapeType.Ellipse:
+                    for (double t = 0; t < 1; t += 0.001)
+                    {
+                        var x1 = (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * p2.x + t * t * p2.x;
+                        var y1 = (1 - t) * (1 - t) * p2.y + 2 * t * (1 - t) * p2.y + t * t * p1.y;
 
+                        var x2 = (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
+                        var y2 = (1 - t) * (1 - t) * p2.y + 2 * t * (1 - t) * p1.y + t * t * p1.y;
+
+                        _texture.SetPixel((int) x1, (int) y1, WrapColor(shape.Color));
+                        _texture.SetPixel((int) x2, (int) y2, WrapColor(shape.Color));
+                    }
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -101,8 +122,9 @@ namespace SVE.Views
             GetComponent<CanvasRenderer>().SetTexture(_texture);
             _texture.Apply();
 
-            //if (DrawCallback != null)
-//                DrawCallback((ILayout) shape);
+            if (DrawCallback == null || !sendShape) return;
+            Debug.Log("draw callback");
+            DrawCallback(shape);
         }
 
         private void ClearCanvas()
@@ -115,6 +137,16 @@ namespace SVE.Views
 
             _texture.SetPixels32(resetColorArray);
             _texture.Apply();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _isPointerOnCanvas = true;
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _isPointerOnCanvas = false;
         }
     }
 }

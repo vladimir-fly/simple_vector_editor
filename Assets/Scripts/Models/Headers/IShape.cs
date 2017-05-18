@@ -2,8 +2,9 @@
 
 namespace SVE.Models
 {
-    public interface IShape
+    public interface IShape : IColorable, IFillable
     {
         IList<ILayout> Layouts { get; }
+        EShapeType ShapeType { get; }
     }
 }

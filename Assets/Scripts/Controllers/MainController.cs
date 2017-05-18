@@ -9,7 +9,7 @@ namespace SVE.Controllers
 {
     public class MainController
     {
-        public Action<IList<ILayout>> CanvasRedrawCallback;
+        public Action<IList<IShape>> CanvasRedrawCallback;
         public Action<Color> PaletteSwitchColor;
         public Action<List<string>> ObjectListShow;
 
@@ -25,21 +25,30 @@ namespace SVE.Controllers
         {
             _commands.Add(command);
             _commands.Last().Execute();
+
+            CanvasRedrawCallback(Project.Shapes);
         }
 
         public void Undo()
         {
             _commands.Last().Revert();
+            Debug.Log("UNDO");
+
+            Debug.Log("shapes = " + Project.Shapes.Count);
+
+            CanvasRedrawCallback(Project.Shapes);
         }
 
         public void Redo()
         {
             _commands.Last().Execute();
+            Debug.Log("REDO");
+            Debug.Log("shapes = " + Project.Shapes.Count);
+            CanvasRedrawCallback(Project.Shapes);
         }
 
         public void Save()
         {
-            //string path, IProjectFormat format
             Debug.LogError("[MainController][SaveProject] save call!");
         }
     }

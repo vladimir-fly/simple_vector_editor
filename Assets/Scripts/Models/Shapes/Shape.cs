@@ -3,15 +3,18 @@ using System.Linq;
 
 namespace SVE.Models
 {
-    public class Shape : IShape, IColorable, IFillable
+    public class Shape : IShape
     {
         public IList<ILayout> Layouts { get; protected set; }
+        public EShapeType ShapeType { get; protected set; }
         public Color Color { get; protected set; }
         public Color FillColor { get; protected set; }
 
-        public Shape(IList<ILayout> layouts, Color color, Color fillColor)
+        public Shape(IList<ILayout> layouts, EShapeType shapeType,
+            Color color = default(Color), Color fillColor = default(Color))
         {
             Layouts = layouts;
+            ShapeType = shapeType;
             Color = color;
             FillColor = fillColor;
         }
@@ -22,7 +25,7 @@ namespace SVE.Models
             Layouts.ToList().ForEach(
                 layout =>
                 {
-                    var colorable = layout as IColorable;
+                    var colorable = (IColorable) layout;
                     if (colorable != null)
                         colorable.SetColor(color);
                 });

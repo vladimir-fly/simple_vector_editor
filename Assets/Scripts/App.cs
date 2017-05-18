@@ -1,4 +1,6 @@
-﻿using SVE.Controllers;
+﻿using System;
+using SVE.Controllers;
+using SVE.Models;
 using SVE.Models.Projects;
 using SVE.UI;
 using UnityEngine;
@@ -34,14 +36,10 @@ namespace SVE
             mainUi.Redo = mainController.Redo;
             mainUi.Save = mainController.Save;
 
-            mainUi.OnCreateShape = (tool, color, arg3) =>
+            mainUi.OnCreateShape = shape =>
             {
-//                var shapeType = typeof(IShape);
-//                var shapeListType = shapeType.MakeGenericType(type);
-//                var shapeInstance = Activator.CreateInstance(shapeListType);
-//                var command = new Add(mainController.Project, shapeInstance as Shape);
-//
-//                mainController.AddCommand(command);
+                Debug.Log("OnCreateShape");
+                mainController.AddCommand(new Add(mainController.Project, shape));
             };
 
             mainController.CanvasRedrawCallback = mainUi.RedrawCanvas;

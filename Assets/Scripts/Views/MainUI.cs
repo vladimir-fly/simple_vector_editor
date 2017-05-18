@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using SVE.Models;
 using SVE.Views;
 
@@ -13,7 +13,7 @@ namespace SVE.UI
 {
     public class MainUI : MonoBehaviour
     {
-        private ETool _currentETool;
+        private EShapeType _currentETool;
         private Color _currentBorderColor;
         private Color _currentFillColor;
         private bool _selectedColorType;
@@ -28,7 +28,7 @@ namespace SVE.UI
         public Action Undo;
         public Action Redo;
         public Action Save;
-        public Action<ETool, Color, ILayout> OnCreateShape;
+        public Action<IShape> OnCreateShape;
 
         private void Start()
         {
@@ -50,7 +50,7 @@ namespace SVE.UI
         public void Init()
         {
             CanvasView.Init(
-                drawCallback: layout => OnCreateShape(_currentETool, _currentBorderColor, layout),
+                drawCallback: layout => OnCreateShape(layout),
                 getBorderColor: () => _currentBorderColor,
                 getCurrentTool: () => _currentETool,
                 getFillColor:() => _currentFillColor);
@@ -59,20 +59,26 @@ namespace SVE.UI
                 color => color.onClick.AddListener(() =>
                 {
                     if (_selectedColorType)
+                    {
                         _currentBorderColor = color.GetComponent<Image>().color;
+                        CurrentBorderColor.GetComponent<Image>().color = _currentBorderColor;
+                    }
                     else
+                    {
                         _currentFillColor = color.GetComponent<Image>().color;
+                        CurrentFillColor.GetComponent<Image>().color = _currentFillColor;
+                    }
                 }));
 
-            Tools.onValueChanged.AddListener(value => _currentETool = (ETool) value);
+            Tools.onValueChanged.AddListener(value => _currentETool = (EShapeType) value);
 
             CurrentBorderColor.onClick.AddListener(() => _selectedColorType = true);
             CurrentFillColor.onClick.AddListener(() => _selectedColorType = false);
         }
 
-        public void RedrawCanvas(IList<ILayout> collection)
+        public void RedrawCanvas(IList<IShape> shapes)
         {
-            //collection.ToList().ForEach(CanvasView.Draw);
+            shapes.ToList().ForEach(shape => CanvasView.Draw(shape, false, false));
         }
 
         private void Update()
